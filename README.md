@@ -4,7 +4,9 @@
 
 ## 🚀 **CARA INSTALL CEPAT (1 COMMAND)**
 # Login ke VPS, lalu jalankan:
+```
 sudo apt update && sudo apt install -y git && git clone https://github.com/your-repo/kpj-bot.git /var/www/kpj-bot && cd /var/www/kpj-bot && chmod +x install.sh && sudo ./install.sh
+```
 
 ##⚙️** INSTAL MANUAL**
 
@@ -39,7 +41,8 @@ node server.js
 ![GitHub forks](https://img.shields.io/github/forks/yourusername/Botkjs)
 
 
-#📁 STRUKTUR POLDER
+#📁 ***STRUKTUR POLDER***
+
 ├── 📄 index.html          # ✅ WAJIB - Frontend utama
 ├── 📄 server.js           # ✅ WAJIB - Backend API
 ├── 📄 package.json        # ✅ WAJIB - Dependencies
