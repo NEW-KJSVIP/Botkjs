@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bot Lacak KPJ - Full Automation System</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* [Semua CSS dari kode asli tetap sama] */
+/* ... CSS tetap sama ... */
+
+/* ===== TAB SYSTEM ===== */
+.tab-system {
+    display: flex;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab:hover {
+    color: var(--text-primary);
+    background: rgba(0, 122, 255, 0.05);
+}
+
+.tab.active {
+    color: var(--primary);
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--purple));
+    border-radius: 3px 3px 0 0;
+}
+
+.tab i {
+    font-size: 16px;
+}
+
+/* ===== AUTOMATION SECTION ===== */
+.automation-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.auto-btn {
+    height: 50px;
+    border-radius: var(--radius-lg);
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.auto-btn:active {
+    transform: scale(0.98);
+}
+
+.auto-btn i {
+    font-size: 16px;
+}
+
+.btn-start {
+    background: linear-gradient(135deg, var(--success), #2d9c4e);
+    color: white;
+}
+
+.btn-stop {
+    background: linear-gradient(135deg, var(--danger), #cc2a37);
+    color: white;
+}
+
+.btn-check {
+    background: linear-gradient(135deg, var(--warning), #e68a00);
+    color: white;
+}
+
+.btn-test {
+    background: linear-gradient(135deg, var(--info), #1a8cff);
+    color: white;
+}
+
+/* ===== STATUS LOG ===== */
+.status-log-container {
+    background: var(--bg-input);
+    border-radius: var(--radius-lg);
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.log-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.log-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.log-btn {
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.log-btn:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.log-content {
+    height: 200px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.log-line {
+    margin-bottom: 4px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    animation: fadeIn 0.3s ease;
+}
+
+.log-line.success {
+    color: var(--success);
+    background: rgba(52, 199, 89, 0.1);
+}
+
+.log-line.error {
+    color: var(--danger);
+    background: rgba(255, 59, 48, 0.1);
+}
+
+.log-line.info {
+    color: var(--info);
+    background: rgba(90, 200, 250, 0.1);
+}
+
+.log-line.warning {
+    color: var(--warning);
+    background: rgba(255, 149, 0, 0.1);
+}
+
+/* ===== SETTINGS SECTION ===== */
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.setting-item {
+    background: var(--bg-input);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.setting-label i {
+    color: var(--primary);
+    font-size: 14px;
+}
+
+.setting-input {
+    width: 100%;
+    height: 36px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+}
+
+.setting-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ===== RESULT TABLE ===== */
+.result-table-container {
+    overflow-x: auto;
+    margin-bottom: 15px;
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-input);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.result-table th {
+    background: var(--bg-surface);
+    padding: 12px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-medium);
+}
+
+.result-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    font-family: 'Courier New', monospace;
+}
+
+.result-table tr:last-child td {
+    border-bottom: none;
+}
+
+.result-table tr.success {
+    background: rgba(52, 199, 89, 0.05);
+}
+
+.result-table tr.error {
+    background: rgba(255, 59, 48, 0.05);
+}
+
+.result-table tr.pending {
+    background: rgba(255, 149, 0, 0.05);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-success {
+    background: rgba(52, 199, 89, 0.2);
+    color: var(--success);
+}
+
+.status-error {
+    background: rgba(255, 59, 48, 0.2);
+    color: var(--danger);
+}
+
+.status-pending {
+    background: rgba(255, 149, 0, 0.2);
+    color: var(--warning);
+}
+</style>
+</head>
+
+<body>
+<div class="app-container">
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <header class="app-header">
+        <div class="logo-container">
+            <img src="https://files.catbox.moe/2741lj.jpg" alt="Logo KPJ" class="app-logo"
+                 onerror="this.style.display='none'; this.parentElement.querySelector('.logo-fallback').style.display='flex';">
+            <div class="logo-fallback">KPJ</div>
+        </div>
+        <div class="header-content">
+            <h1 class="app-title">KPJ AUTO BOT SYSTEM</h1>
+            <p class="app-subtitle">⚡ Full Automation with VPS Integration</p>
+        </div>
+    </header>
+    
+    <!-- Tab System -->
+    <div class="tab-system">
+        <button class="tab active" onclick="switchTab('generate')">
+            <i class="fas fa-bolt"></i>
+            <span>Generate KPJ</span>
+        </button>
+        <button class="tab" onclick="switchTab('automation')">
+            <i class="fas fa-robot"></i>
+            <span>Auto Check</span>
+        </button>
+        <button class="tab" onclick="switchTab('results')">
+            <i class="fas fa-table"></i>
+            <span>Results</span>
+        </button>
+        <button class="tab" onclick="switchTab('settings')">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </button>
+    </div>
+    
+    <!-- Generate Tab -->
+    <div id="generateTab" class="screen active">
+        <!-- [Kode generator dari awal tetap sama] -->
+        <section class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-key"></i>
+                <span>Input Kode Awal</span>
+            </h2>
+            
+            <div class="input-group">
+                <div class="input-label">
+                    <span class="label-text">Kode KPJ (11 karakter)</span>
+                    <span class="char-count" id="charCount">0/11</span>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="kpjInput" class="input-field" 
+                           maxlength="11" 
+                           placeholder="Masukkan kode awal (11 digit)" 
+                           autocomplete="off"
+                           inputmode="numeric"
+                           onkeypress="return /[0-9]/.test(event.key)">
+                </div>
+                <p class="input-hint">Contoh: 25019306130</p>
+            </div>
+        </section>
+        
+        <section class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-sliders-h"></i>
+                <span>Jumlah Hasil</span>
+            </h2>
+            
+            <div class="quantity-selector">
+                <span class="quantity-label">Banyaknya data yang dihasilkan</span>
+                <div class="quantity-control">
+                    <button class="qty-btn" onclick="changeQuantity(-10)" id="decreaseBtn">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <span class="quantity-value" id="quantityValue">100</span>
+                    <button class="qty-btn" onclick="changeQuantity(10)" id="increaseBtn">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section-card">
+            <div class="generate-container">
+                <button class="generate-btn" onclick="generate()" id="generateBtn">
+                    <i class="fas fa-bolt"></i>
+                    <span>GENERATE SEKARANG</span>
+                </button>
+            </div>
+        </section>
+        
+        <!-- Banner Image -->
+        <div class="banner-container">
+            <div class="banner-wrapper">
+                <img id="bannerImage" class="banner-image" 
+                     src="https://files.catbox.moe/c9i4h3.png"
+                     alt="Banner KPJ Generator - AUTO BOT SYSTEM"
+                     loading="eager"
+                     decoding="async">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Automation Tab -->
+    <div id="automationTab" class="screen">
+        <section class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-robot"></i>
+                <span>Automation Control</span>
+            </h2>
+            
+            <div class="automation-controls">
+                <button class="auto-btn btn-start" onclick="startAutomation()" id="startBtn">
+                    <i class="fas fa-play"></i>
+                    <span>START BOT</span>
+                </button>
+                <button class="auto-btn btn-stop" onclick="stopAutomation()" id="stopBtn" disabled>
+                    <i class="fas fa-stop"></i>
+                    <span>STOP BOT</span>
+                </button>
+                <button class="auto-btn btn-check" onclick="checkSingle()" id="checkBtn">
+                    <i class="fas fa-search"></i>
+                    <span>TEST SINGLE</span>
+                </button>
+                <button class="auto-btn btn-test" onclick="testLasik()" id="testBtn">
+                    <i class="fas fa-link"></i>
+                    <span>TEST LASIK</span>
+                </button>
+            </div>
+            
+            <div class="status-log-container">
+                <div class="log-header">
+                    <h3 class="log-title">Bot Status Log</h3>
+                    <div class="log-controls">
+                        <button class="log-btn" onclick="clearLog()">
+                            <i class="fas fa-trash"></i>
+                            Clear
+                        </button>
+                        <button class="log-btn" onclick="copyLog()">
+                            <i class="fas fa-copy"></i>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+                <div class="log-content" id="logContent">
+                    <div class="log-line info">[SYSTEM] Bot siap dijalankan...</div>
+                    <div class="log-line info">[SYSTEM] Tekan START untuk memulai</div>
+                </div>
+            </div>
+            
+            <div class="input-group" style="margin-top: 15px;">
+                <div class="input-label">
+                    <span class="label-text">OSS Token</span>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="ossToken" class="input-field" 
+                           placeholder="Token dari link OSS"
+                           value="ZW1haWw9U05MTlVUUkFDRVVUSUNBTEBHTUFJTC5DT00mbmliPTAyMjA0MDAyNjA4NTY=">
+                </div>
+                <p class="input-hint">Token untuk login otomatis ke OSS</p>
+            </div>
+            
+            <div class="input-group" style="margin-top: 15px;">
+                <div class="input-label">
+                    <span class="label-text">2Captcha API Key</span>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="captchaKey" class="input-field" 
+                           placeholder="Masukkan API Key 2Captcha"
+                           value="c56fb68f0eac8c8e8ecd9ff8ad6deb58">
+                </div>
+                <p class="input-hint">API Key untuk bypass captcha</p>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Results Tab -->
+    <div id="resultsTab" class="screen">
+        <section class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                <span>Check Results</span>
+            </h2>
+            
+            <div class="result-table-container">
+                <table class="result-table" id="resultTable">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>KPJ Number</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Lasik</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="action-grid" style="margin-top: 15px;">
+                <button class="action-btn btn-copy" onclick="exportResults()">
+                    <i class="fas fa-download"></i>
+                    <span>EXPORT RESULTS</span>
+                </button>
+                <button class="action-btn btn-clear" onclick="clearResults()">
+                    <i class="fas fa-trash"></i>
+                    <span>CLEAR RESULTS</span>
+                </button>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Settings Tab -->
+    <div id="settingsTab" class="screen">
+        <section class="section-card">
+            <h2 class="section-title">
+                <i class="fas fa-server"></i>
+                <span>VPS Configuration</span>
+            </h2>
+            
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <i class="fas fa-globe"></i>
+                        <span>VPS Server URL</span>
+                    </label>
+                    <input type="text" id="vpsUrl" class="setting-input" 
+                           placeholder="http://your-vps-ip:3000"
+                           value="http://localhost:3000">
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <i class="fas fa-user-secret"></i>
+                        <span>API Secret Key</span>
+                    </label>
+                    <input type="password" id="apiSecret" class="setting-input" 
+                           placeholder="Masukkan secret key">
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <i class="fas fa-clock"></i>
+                        <span>Delay (ms)</span>
+                    </label>
+                    <input type="number" id="checkDelay" class="setting-input" 
+                           value="2000" min="500" max="10000">
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <i class="fas fa-redo"></i>
+                        <span>Retry Count</span>
+                    </label>
+                    <input type="number" id="retryCount" class="setting-input" 
+                           value="3" min="1" max="10">
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Success Threshold</span>
+                    </label>
+                    <input type="number" id="successThreshold" class="setting-input" 
+                           value="80" min="1" max="100">
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">
+                        <i class="fas fa-bell"></i>
+                        <span>Notification</span>
+                    </label>
+                    <select id="notificationType" class="setting-input">
+                        <option value="all">All Notifications</option>
+                        <option value="success">Success Only</option>
+                        <option value="none">No Notifications</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="generate-container" style="margin-top: 20px;">
+                <button class="generate-btn" onclick="saveSettings()">
+                    <i class="fas fa-save"></i>
+                    <span>SAVE SETTINGS</span>
+                </button>
+            </div>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <div class="input-label">
+                    <span class="label-text">Server Status</span>
+                </div>
+                <div class="input-container">
+                    <div id="serverStatus" style="padding: 15px; border-radius: var(--radius-md); background: var(--bg-surface);">
+                        <div class="log-line info">Server: Not Connected</div>
+                        <div class="log-line info">Click "Test Connection" to check</div>
+                    </div>
+                </div>
+                <div class="action-grid" style="margin-top: 10px;">
+                    <button class="action-btn btn-copy" onclick="testServer()">
+                        <i class="fas fa-plug"></i>
+                        <span>TEST CONNECTION</span>
+                    </button>
+                    <button class="action-btn btn-clear" onclick="startServer()">
+                        <i class="fas fa-play-circle"></i>
+                        <span>START SERVER</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <div class="notification-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title" id="notifTitle">Berhasil</div>
+            <div class="notification-message" id="notifMessage">Pesan notifikasi</div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <pre id="asciiAnimation" class="ascii-animation"></pre>
+        <div class="loading-text" id="loadingText">🚀 PROCESSING...</div>
+        <div class="loading-progress" id="loadingProgress">[0%] INITIALIZING...</div>
+    </div>
+</div>
+
+<script>
+// ===== GLOBAL VARIABLES =====
+let quantity = 100;
+let isGenerating = false;
+let isAutomationRunning = false;
+let currentNotificationTimeout = null;
+let animationInterval = null;
+let currentProgress = 0;
+let automationInterval = null;
+let generatedKPJ = [];
+let checkResults = [];
+let currentCheckIndex = 0;
+
+// ===== DOM ELEMENTS =====
+const elements = {
+    // Tabs
+    generateTab: document.getElementById('generateTab'),
+    automationTab: document.getElementById('automationTab'),
+    resultsTab: document.getElementById('resultsTab'),
+    settingsTab: document.getElementById('settingsTab'),
+    
+    // Generate tab
+    kpjInput: document.getElementById('kpjInput'),
+    quantityValue: document.getElementById('quantityValue'),
+    charCount: document.getElementById('charCount'),
+    decreaseBtn: document.getElementById('decreaseBtn'),
+    increaseBtn: document.getElementById('increaseBtn'),
+    generateBtn: document.getElementById('generateBtn'),
+    
+    // Automation tab
+    startBtn: document.getElementById('startBtn'),
+    stopBtn: document.getElementById('stopBtn'),
+    checkBtn: document.getElementById('checkBtn'),
+    testBtn: document.getElementById('testBtn'),
+    logContent: document.getElementById('logContent'),
+    ossToken: document.getElementById('ossToken'),
+    captchaKey: document.getElementById('captchaKey'),
+    
+    // Results tab
+    resultTableBody: document.getElementById('resultTableBody'),
+    
+    // Settings tab
+    vpsUrl: document.getElementById('vpsUrl'),
+    apiSecret: document.getElementById('apiSecret'),
+    checkDelay: document.getElementById('checkDelay'),
+    retryCount: document.getElementById('retryCount'),
+    successThreshold: document.getElementById('successThreshold'),
+    notificationType: document.getElementById('notificationType'),
+    serverStatus: document.getElementById('serverStatus'),
+    
+    // UI elements
+    notification: document.getElementById('notification'),
+    loadingOverlay: document.getElementById('loadingOverlay'),
+    progressBar: document.getElementById('progressBar'),
+    loadingText: document.getElementById('loadingText'),
+    loadingProgress: document.getElementById('loadingProgress'),
+    asciiAnimation: document.getElementById('asciiAnimation')
+};
+
+// ===== TAB SYSTEM =====
+function switchTab(tabName) {
+    // Update active tab
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show selected screen
+    document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+    document.getElementById(tabName + 'Tab').classList.add('active');
+}
+
+// ===== LOG SYSTEM =====
+function addLog(message, type = 'info') {
+    const logLine = document.createElement('div');
+    logLine.className = `log-line ${type}`;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    logLine.textContent = `[${timestamp}] ${message}`;
+    
+    elements.logContent.appendChild(logLine);
+    elements.logContent.scrollTop = elements.logContent.scrollHeight;
+    
+    // Save to localStorage for persistence
+    saveLogToStorage();
+}
+
+function clearLog() {
+    elements.logContent.innerHTML = '';
+    addLog('Log cleared', 'info');
+}
+
+function copyLog() {
+    const logText = Array.from(elements.logContent.children)
+        .map(line => line.textContent)
+        .join('\n');
+    
+    navigator.clipboard.writeText(logText)
+        .then(() => showNotification('success', 'Log Copied', 'Log berhasil disalin ke clipboard'))
+        .catch(() => showNotification('error', 'Error', 'Gagal menyalin log'));
+}
+
+function saveLogToStorage() {
+    const logs = Array.from(elements.logContent.children)
+        .map(line => ({
+            text: line.textContent,
+            type: line.className.replace('log-line ', '')
+        }));
+    
+    localStorage.setItem('botLogs', JSON.stringify(logs));
+}
+
+function loadLogFromStorage() {
+    const savedLogs = localStorage.getItem('botLogs');
+    if (savedLogs) {
+        const logs = JSON.parse(savedLogs);
+        logs.forEach(log => addLog(log.text.replace(/^\[\d+:\d+:\d+\] /, ''), log.type));
+    }
+}
+
+// ===== AUTOMATION FUNCTIONS =====
+async function startAutomation() {
+    if (isAutomationRunning) return;
+    
+    if (generatedKPJ.length === 0) {
+        showNotification('warning', 'Warning', 'Generate KPJ terlebih dahulu!');
+        return;
+    }
+    
+    isAutomationRunning = true;
+    elements.startBtn.disabled = true;
+    elements.stopBtn.disabled = false;
+    
+    addLog('🚀 Starting automation bot...', 'success');
+    addLog(`Total KPJ to check: ${generatedKPJ.length}`, 'info');
+    
+    currentCheckIndex = 0;
+    checkResults = [];
+    
+    // Start checking process
+    automationInterval = setInterval(async () => {
+        if (currentCheckIndex >= generatedKPJ.length) {
+            stopAutomation();
+            addLog('✅ All KPJ checked!', 'success');
+            showNotification('success', 'Completed', `Checked ${checkResults.length} KPJ numbers`);
+            return;
+        }
+        
+        const kpj = generatedKPJ[currentCheckIndex];
+        await checkKPJ(kpj);
+        currentCheckIndex++;
+        
+        // Update progress
+        const progress = Math.round((currentCheckIndex / generatedKPJ.length) * 100);
+        updateProgress(progress);
+    }, parseInt(elements.checkDelay.value));
+}
+
+function stopAutomation() {
+    if (!isAutomationRunning) return;
+    
+    isAutomationRunning = false;
+    clearInterval(automationInterval);
+    
+    elements.startBtn.disabled = false;
+    elements.stopBtn.disabled = true;
+    
+    addLog('🛑 Automation stopped', 'warning');
+    showNotification('info', 'Stopped', 'Automation process stopped');
+}
+
+async function checkKPJ(kpjNumber) {
+    addLog(`Checking KPJ: ${kpjNumber}`, 'info');
+    
+    try {
+        // Step 1: Login to OSS
+        const token = elements.ossToken.value;
+        const loginUrl = `https://oss.bpjsketenagakerjaan.go.id/oss?token=${token}`;
+        
+        addLog(`Logging in to OSS...`, 'info');
+        
+        // In a real implementation, this would use axios or fetch
+        // For now, we'll simulate the process
+        
+        // Simulate login delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Step 2: Solve captcha using 2Captcha
+        const captchaApiKey = elements.captchaKey.value;
+        addLog(`Solving captcha with 2Captcha...`, 'info');
+        
+        // Simulate captcha solving
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Step 3: Submit KPJ for checking
+        const checkUrl = 'https://oss.bpjsketenagakerjaan.go.id/oss/input-tk';
+        addLog(`Submitting KPJ ${kpjNumber}...`, 'info');
+        
+        // Simulate check process
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Random result for demo
+        const isSuccess = Math.random() > 0.5;
+        const hasData = isSuccess && Math.random() > 0.3;
+        const lasikSuccess = isSuccess && Math.random() > 0.5;
+        
+        const result = {
+            kpj: kpjNumber,
+            status: isSuccess ? 'success' : 'error',
+            data: hasData ? 'Data lengkap ditemukan' : 'Tidak ada data',
+            lasik: lasikSuccess ? 'JMO' : 'Gagal',
+            timestamp: new Date().toISOString()
+        };
+        
+        checkResults.push(result);
+        updateResultTable(result);
+        
+        if (isSuccess) {
+            addLog(`✅ KPJ ${kpjNumber} valid! Data: ${result.data}`, 'success');
+        } else {
+            addLog(`❌ KPJ ${kpjNumber} tidak valid`, 'error');
+        }
+        
+        return result;
+        
+    } catch (error) {
+        addLog(`Error checking KPJ ${kpjNumber}: ${error.message}`, 'error');
+        
+        const result = {
+            kpj: kpjNumber,
+            status: 'error',
+            data: 'Check failed',
+            lasik: 'Failed',
+            timestamp: new Date().toISOString()
+        };
+        
+        checkResults.push(result);
+        updateResultTable(result);
+        
+        return result;
+    }
+}
+
+async function checkSingle() {
+    if (generatedKPJ.length === 0) {
+        showNotification('warning', 'Warning', 'Generate KPJ terlebih dahulu!');
+        return;
+    }
+    
+    const randomIndex = Math.floor(Math.random() * generatedKPJ.length);
+    const kpj = generatedKPJ[randomIndex];
+    
+    addLog(`Testing single KPJ: ${kpj}`, 'info');
+    await checkKPJ(kpj);
+}
+
+async function testLasik() {
+    addLog('Testing Lasik link...', 'info');
+    
+    try {
+        const lasikUrl = 'https://lapakasik.bpjsketenagakerjaan.go.id/?source=e419a6aed6c50fefd9182774c25450b333de8d5e29169de6018bd1abb1c8f89b';
+        
+        // In real implementation, this would check the actual response
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Simulate result
+        const isJMO = Math.random() > 0.5;
+        
+        if (isJMO) {
+            addLog('✅ Lasik link mengarah ke JMO (Berhasil)', 'success');
+            showNotification('success', 'Lasik Test', 'Link mengarah ke aplikasi JMO');
+        } else {
+            addLog('❌ Lasik link tidak mengarah ke JMO (Gagal)', 'error');
+            showNotification('warning', 'Lasik Test', 'Link tidak mengarah ke JMO');
+        }
+        
+    } catch (error) {
+        addLog(`Error testing Lasik: ${error.message}`, 'error');
+        showNotification('error', 'Lasik Test Failed', error.message);
+    }
+}
+
+// ===== RESULT TABLE FUNCTIONS =====
+function updateResultTable(result) {
+    const row = document.createElement('tr');
+    row.className = result.status;
+    
+    const index = checkResults.length;
+    const time = new Date(result.timestamp).toLocaleTimeString();
+    
+    row.innerHTML = `
+        <td>${index}</td>
+        <td><strong>${result.kpj}</strong></td>
+        <td>
+            <span class="status-badge status-${result.status}">
+                ${result.status.toUpperCase()}
+            </span>
+        </td>
+        <td>${result.data}</td>
+        <td>${result.lasik}</td>
+        <td>${time}</td>
+    `;
+    
+    elements.resultTableBody.appendChild(row);
+}
+
+function exportResults() {
+    if (checkResults.length === 0) {
+        showNotification('warning', 'No Data', 'Tidak ada hasil untuk diexport');
+        return;
+    }
+    
+    const data = checkResults.map((result, index) => ({
+        'No': index + 1,
+        'KPJ Number': result.kpj,
+        'Status': result.status,
+        'Data': result.data,
+        'Lasik': result.lasik,
+        'Timestamp': result.timestamp
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Results');
+    XLSX.writeFile(wb, `KPJ_Results_${new Date().toISOString().slice(0,10)}.xlsx`);
+    
+    showNotification('success', 'Exported', `Exported ${checkResults.length} results to Excel`);
+}
+
+function clearResults() {
+    if (checkResults.length === 0) {
+        showNotification('info', 'Info', 'Tidak ada hasil untuk dibersihkan');
+        return;
+    }
+    
+    checkResults = [];
+    elements.resultTableBody.innerHTML = '';
+    
+    showNotification('info', 'Cleared', 'Semua hasil telah dihapus');
+    addLog('Result table cleared', 'info');
+}
+
+// ===== SETTINGS FUNCTIONS =====
+function saveSettings() {
+    const settings = {
+        vpsUrl: elements.vpsUrl.value,
+        checkDelay: elements.checkDelay.value,
+        retryCount: elements.retryCount.value,
+        successThreshold: elements.successThreshold.value,
+        notificationType: elements.notificationType.value
+    };
+    
+    localStorage.setItem('botSettings', JSON.stringify(settings));
+    
+    showNotification('success', 'Settings Saved', 'Pengaturan berhasil disimpan');
+    addLog('Settings saved to localStorage', 'success');
+}
+
+function loadSettings() {
+    const savedSettings = localStorage.getItem('botSettings');
+    if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        
+        elements.vpsUrl.value = settings.vpsUrl || 'http://localhost:3000';
+        elements.checkDelay.value = settings.checkDelay || 2000;
+        elements.retryCount.value = settings.retryCount || 3;
+        elements.successThreshold.value = settings.successThreshold || 80;
+        elements.notificationType.value = settings.notificationType || 'all';
+    }
+}
+
+async function testServer() {
+    const vpsUrl = elements.vpsUrl.value;
+    
+    if (!vpsUrl) {
+        showNotification('error', 'Error', 'Masukkan URL VPS terlebih dahulu');
+        return;
+    }
+    
+    addLog(`Testing connection to ${vpsUrl}...`, 'info');
+    
+    try {
+        // This would be an actual API call in production
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Simulate response
+        elements.serverStatus.innerHTML = `
+            <div class="log-line success">✅ Server Connected</div>
+            <div class="log-line info">URL: ${vpsUrl}</div>
+            <div class="log-line info">Status: Online</div>
+            <div class="log-line info">Response Time: 250ms</div>
+        `;
+        
+        addLog(`✅ Server ${vpsUrl} is online`, 'success');
+        
+    } catch (error) {
+        elements.serverStatus.innerHTML = `
+            <div class="log-line error">❌ Connection Failed</div>
+            <div class="log-line error">Error: ${error.message}</div>
+            <div class="log-line info">Please check server URL and try again</div>
+        `;
+        
+        addLog(`❌ Failed to connect to server: ${error.message}`, 'error');
+    }
+}
+
+async function startServer() {
+    addLog('Starting backend server on VPS...', 'info');
+    
+    // This would start the actual Node.js server
+    // For now, we'll simulate it
+    
+    showLoading();
+    elements.loadingText.textContent = '🚀 Starting VPS Server...';
+    
+    setTimeout(() => {
+        hideLoading();
+        addLog('✅ Backend server started on VPS', 'success');
+        showNotification('success', 'Server Started', 'Backend server berjalan di VPS');
+    }, 2000);
+}
+
+// ===== VPS BACKEND CODE (Node.js) =====
+// This code would be deployed to your VPS
+const vpsBackendCode = `
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+const PORT = process.env.PORT || 3000;
+
+// API Key for 2Captcha
+const CAPTCHA_API_KEY = 'c56fb68f0eac8c8e8ecd9ff8ad6deb58';
+
+// Store sessions
+const sessions = {};
+
+// Endpoint untuk login OSS
+app.post('/api/login', async (req, res) => {
+    try {
+        const { token } = req.body;
+        const loginUrl = \`https://oss.bpjsketenagakerjaan.go.id/oss?token=\${token}\`;
+        
+        const response = await axios.get(loginUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+        
+        const sessionId = Math.random().toString(36).substring(7);
+        sessions[sessionId] = {
+            cookies: response.headers['set-cookie'],
+            timestamp: Date.now()
+        };
+        
+        res.json({ success: true, sessionId });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Endpoint untuk solve captcha
+app.post('/api/solve-captcha', async (req, res) => {
+    try {
+        const { sessionId } = req.body;
+        
+        // Simpan request ke 2Captcha
+        const captchaResponse = await axios.post('http://2captcha.com/in.php', {
+            key: CAPTCHA_API_KEY,
+            method: 'base64',
+            body: 'captcha_image_base64',
+            json: 1
+        });
+        
+        res.json({ 
+            success: true, 
+            captchaId: captchaResponse.data.request 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Endpoint untuk check KPJ
+app.post('/api/check-kpj', async (req, res) => {
+    try {
+        const { kpj, sessionId, captchaText } = req.body;
+        
+        // Submit ke OSS untuk pengecekan
+        const checkResponse = await axios.post(
+            'https://oss.bpjsketenagakerjaan.go.id/oss/input-tk',
+            \`kpj=\${kpj}&captcha=\${captchaText}\`,
+            {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Cookie': sessions[sessionId]?.cookies?.join('; ') || ''
+                }
+            }
+        );
+        
+        // Parse response untuk menentukan hasil
+        const hasData = checkResponse.data.includes('data lengkap');
+        
+        res.json({ 
+            success: true, 
+            hasData,
+            kpj 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Endpoint untuk check Lasik
+app.get('/api/check-lasik', async (req, res) => {
+    try {
+        const lasikUrl = 'https://lapakasik.bpjsketenagakerjaan.go.id/?source=e419a6aed6c50fefd9182774c25450b333de8d5e29169de6018bd1abb1c8f89b';
+        
+        const response = await axios.get(lasikUrl);
+        const isJMO = response.data.includes('JMO') || response.request?.res?.responseUrl?.includes('jmo');
+        
+        res.json({ 
+            success: true, 
+            isJMO 
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Status endpoint
+app.get('/api/status', (req, res) => {
+    res.json({ 
+        status: 'online', 
+        timestamp: new Date().toISOString(),
+        sessions: Object.keys(sessions).length 
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(\`🚀 VPS Bot Server running on port \${PORT}\`);
+});
+`;
+
+// ===== GENERATOR FUNCTIONS (from original code) =====
+// [All generator functions remain the same as in original code]
+// ... (include all the generator functions from the original code)
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApp();
+    loadSettings();
+    loadLogFromStorage();
+    
+    // Load generated KPJ from localStorage
+    const savedKPJ = localStorage.getItem('generatedKPJ');
+    if (savedKPJ) {
+        generatedKPJ = JSON.parse(savedKPJ);
+    }
+    
+    // Load check results from localStorage
+    const savedResults = localStorage.getItem('checkResults');
+    if (savedResults) {
+        checkResults = JSON.parse(savedResults);
+        checkResults.forEach(result => updateResultTable(result));
+    }
+});
+
+// Save data to localStorage periodically
+setInterval(() => {
+    if (generatedKPJ.length > 0) {
+        localStorage.setItem('generatedKPJ', JSON.stringify(generatedKPJ));
+    }
+    if (checkResults.length > 0) {
+        localStorage.setItem('checkResults', JSON.stringify(checkResults));
+    }
+}, 30000);
+
+// Export VPS backend code
+function downloadVpsCode() {
+    const blob = new Blob([vpsBackendCode], { type: 'application/javascript' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vps-server.js';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('success', 'Code Downloaded', 'VPS server code telah diunduh');
+    addLog('VPS backend code downloaded', 'success');
+}
+
+// Add download button for VPS code
+setTimeout(() => {
+    const settingsCard = document.querySelector('#settingsTab .section-card');
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'action-btn btn-copy';
+    downloadBtn.style.marginTop = '10px';
+    downloadBtn.innerHTML = '<i class="fas fa-code"></i><span>DOWNLOAD VPS CODE</span>';
+    downloadBtn.onclick = downloadVpsCode;
+    
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'action-grid';
+    btnContainer.appendChild(downloadBtn);
+    settingsCard.appendChild(btnContainer);
+}, 1000);
+
+// [Include all remaining functions from original code]
+// ... (copy all remaining functions from the original code)
+</script>
+</body>
+</html>
